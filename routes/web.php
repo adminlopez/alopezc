@@ -11,11 +11,5 @@
     */
 
     Route::get('/', function () {
-        return view('company');
+        return view('index');
     });
-
-    Route::get('/isaac', function () {
-        return view('company');
-    });
-
-    //Route::get('/isaac', 'OrdenesController@index');

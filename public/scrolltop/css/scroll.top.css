@@ -1,0 +1,36 @@
+/* ==========================================================================
+    SCROLL TO TOP
+   ========================================================================== */
+#scrollUp
+{
+    display: none;
+    width: 50px;
+    height: 50px;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-image: url(../img/back-to-top.png);
+    background-repeat: no-repeat;
+    background-position: 50% 48%;
+    background-color: rgba(35, 35, 35, 0.5);
+    -webkit-border-radius: 100%;
+    -moz-border-radius: 100%;
+    -o-border-radius: 100%;
+    border-radius: 100%;
+    -webkit-transition: all 250ms linear;
+    -moz-transition: all 250ms linear;
+    transition: all 250ms linear;	
+}
+
+#scrollUp:hover
+{
+    background-color: rgba(21,21,12,0.7);
+}
+
+/*nav a#pull
+{  
+    display: none;  
+}*/
+/* ==========================================================================
+    SCROLL TO TOP
+   ========================================================================== */
