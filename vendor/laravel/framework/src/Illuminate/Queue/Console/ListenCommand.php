@@ -2,8 +2,8 @@
 
 namespace Illuminate\Queue\Console;
 
-use Illuminate\Queue\Listener;
 use Illuminate\Console\Command;
+use Illuminate\Queue\Listener;
 use Illuminate\Queue\ListenerOptions;
 
 class ListenCommand extends Command
@@ -21,7 +21,7 @@ class ListenCommand extends Command
                             {--queue= : The queue to listen on}
                             {--sleep=3 : Number of seconds to sleep when no job is available}
                             {--timeout=60 : The number of seconds a child process can run}
-                            {--tries=0 : Number of times to attempt a job before logging it failed}';
+                            {--tries=1 : Number of times to attempt a job before logging it failed}';
 
     /**
      * The console command description.
@@ -55,7 +55,7 @@ class ListenCommand extends Command
      *
      * @return void
      */
-    public function fire()
+    public function handle()
     {
         // We need to get the right queue for the connection which is set in the queue
         // configuration file for the application. We will pull it based on the set

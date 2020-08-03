@@ -57,6 +57,7 @@
 %token T_ENDDECLARE
 %token T_AS
 %token T_SWITCH
+%token T_MATCH
 %token T_ENDSWITCH
 %token T_CASE
 %token T_DEFAULT
@@ -64,6 +65,7 @@
 %token T_CONTINUE
 %token T_GOTO
 %token T_FUNCTION
+%token T_FN
 %token T_CONST
 %token T_RETURN
 %token T_TRY
@@ -111,3 +113,6 @@
 %token T_DIR
 %token T_NS_SEPARATOR
 %token T_ELLIPSIS
+%token T_NAME_FULLY_QUALIFIED
+%token T_NAME_QUALIFIED
+%token T_NAME_RELATIVE

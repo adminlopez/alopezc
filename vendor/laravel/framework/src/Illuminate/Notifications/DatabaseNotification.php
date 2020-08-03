@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class DatabaseNotification extends Model
 {
     /**
+     * The "type" of the primary key ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
+
+    /**
      * Indicates if the IDs are auto-incrementing.
      *
      * @var bool
@@ -39,6 +46,8 @@ class DatabaseNotification extends Model
 
     /**
      * Get the notifiable entity that the notification belongs to.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */
     public function notifiable()
     {
@@ -54,6 +63,18 @@ class DatabaseNotification extends Model
     {
         if (is_null($this->read_at)) {
             $this->forceFill(['read_at' => $this->freshTimestamp()])->save();
+        }
+    }
+
+    /**
+     * Mark the notification as unread.
+     *
+     * @return void
+     */
+    public function markAsUnread()
+    {
+        if (! is_null($this->read_at)) {
+            $this->forceFill(['read_at' => null])->save();
         }
     }
 

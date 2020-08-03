@@ -2,8 +2,9 @@
 
 namespace Illuminate\Http;
 
-use Exception;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Symfony\Component\HttpFoundation\HeaderBag;
+use Throwable;
 
 trait ResponseTrait
 {
@@ -17,7 +18,7 @@ trait ResponseTrait
     /**
      * The exception that triggered the error response (if applicable).
      *
-     * @var \Exception|null
+     * @var \Throwable|null
      */
     public $exception;
 
@@ -48,7 +49,9 @@ trait ResponseTrait
      */
     public function getOriginalContent()
     {
-        return $this->original;
+        $original = $this->original;
+
+        return $original instanceof self ? $original->{__FUNCTION__}() : $original;
     }
 
     /**
@@ -56,7 +59,7 @@ trait ResponseTrait
      *
      * @param  string  $key
      * @param  array|string  $values
-     * @param  bool    $replace
+     * @param  bool  $replace
      * @return $this
      */
     public function header($key, $values, $replace = true)
@@ -69,11 +72,15 @@ trait ResponseTrait
     /**
      * Add an array of headers to the response.
      *
-     * @param  array  $headers
+     * @param  \Symfony\Component\HttpFoundation\HeaderBag|array  $headers
      * @return $this
      */
-    public function withHeaders(array $headers)
+    public function withHeaders($headers)
     {
+        if ($headers instanceof HeaderBag) {
+            $headers = $headers->all();
+        }
+
         foreach ($headers as $key => $value) {
             $this->headers->set($key, $value);
         }
@@ -110,12 +117,22 @@ trait ResponseTrait
     }
 
     /**
+     * Get the callback of the response.
+     *
+     * @return string|null
+     */
+    public function getCallback()
+    {
+        return $this->callback ?? null;
+    }
+
+    /**
      * Set the exception to attach to the response.
      *
-     * @param  \Exception  $e
+     * @param  \Throwable  $e
      * @return $this
      */
-    public function withException(Exception $e)
+    public function withException(Throwable $e)
     {
         $this->exception = $e;
 
@@ -124,6 +141,8 @@ trait ResponseTrait
 
     /**
      * Throws the response in a HttpResponseException instance.
+     *
+     * @return void
      *
      * @throws \Illuminate\Http\Exceptions\HttpResponseException
      */

@@ -2,18 +2,19 @@
 
 namespace Illuminate\Queue\Console;
 
-use Illuminate\Support\Arr;
 use Illuminate\Console\Command;
-use Symfony\Component\Console\Input\InputArgument;
+use Illuminate\Support\Arr;
 
 class RetryCommand extends Command
 {
     /**
-     * The console command name.
+     * The console command signature.
      *
      * @var string
      */
-    protected $name = 'queue:retry';
+    protected $signature = 'queue:retry
+                            {id?* : The ID of the failed job or "all" to retry all jobs}
+                            {--range=* : Range of job IDs (numeric) to be retried}';
 
     /**
      * The console command description.
@@ -27,7 +28,7 @@ class RetryCommand extends Command
      *
      * @return void
      */
-    public function fire()
+    public function handle()
     {
         foreach ($this->getJobIds() as $id) {
             $job = $this->laravel['queue.failer']->find($id);
@@ -51,10 +52,33 @@ class RetryCommand extends Command
      */
     protected function getJobIds()
     {
-        $ids = $this->argument('id');
+        $ids = (array) $this->argument('id');
 
         if (count($ids) === 1 && $ids[0] === 'all') {
-            $ids = Arr::pluck($this->laravel['queue.failer']->all(), 'id');
+            return Arr::pluck($this->laravel['queue.failer']->all(), 'id');
+        }
+
+        if ($ranges = (array) $this->option('range')) {
+            $ids = array_merge($ids, $this->getJobIdsByRanges($ranges));
+        }
+
+        return array_values(array_filter(array_unique($ids)));
+    }
+
+    /**
+     * Get the job IDs ranges, if applicable.
+     *
+     * @param  array  $ranges
+     * @return array
+     */
+    protected function getJobIdsByRanges(array $ranges)
+    {
+        $ids = [];
+
+        foreach ($ranges as $range) {
+            if (preg_match('/^[0-9]+\-[0-9]+$/', $range)) {
+                $ids = array_merge($ids, range(...explode('-', $range)));
+            }
         }
 
         return $ids;
@@ -90,17 +114,5 @@ class RetryCommand extends Command
         }
 
         return json_encode($payload);
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments()
-    {
-        return [
-            ['id', InputArgument::IS_ARRAY, 'The ID of the failed job'],
-        ];
     }
 }
