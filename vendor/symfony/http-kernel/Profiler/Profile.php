@@ -43,20 +43,12 @@ class Profile
      */
     private $children = [];
 
-    /**
-     * @param string $token The token
-     */
-    public function __construct($token)
+    public function __construct(string $token)
     {
         $this->token = $token;
     }
 
-    /**
-     * Sets the token.
-     *
-     * @param string $token The token
-     */
-    public function setToken($token)
+    public function setToken(string $token)
     {
         $this->token = $token;
     }
@@ -102,19 +94,14 @@ class Profile
     /**
      * Returns the IP.
      *
-     * @return string The IP
+     * @return string|null The IP
      */
     public function getIp()
     {
         return $this->ip;
     }
 
-    /**
-     * Sets the IP.
-     *
-     * @param string $ip
-     */
-    public function setIp($ip)
+    public function setIp(?string $ip)
     {
         $this->ip = $ip;
     }
@@ -122,14 +109,14 @@ class Profile
     /**
      * Returns the request method.
      *
-     * @return string The request method
+     * @return string|null The request method
      */
     public function getMethod()
     {
         return $this->method;
     }
 
-    public function setMethod($method)
+    public function setMethod(string $method)
     {
         $this->method = $method;
     }
@@ -137,21 +124,19 @@ class Profile
     /**
      * Returns the URL.
      *
-     * @return string The URL
+     * @return string|null The URL
      */
     public function getUrl()
     {
         return $this->url;
     }
 
-    public function setUrl($url)
+    public function setUrl(?string $url)
     {
         $this->url = $url;
     }
 
     /**
-     * Returns the time.
-     *
      * @return int The time
      */
     public function getTime()
@@ -163,24 +148,18 @@ class Profile
         return $this->time;
     }
 
-    /**
-     * @param int $time The time
-     */
-    public function setTime($time)
+    public function setTime(int $time)
     {
         $this->time = $time;
     }
 
-    /**
-     * @param int $statusCode
-     */
-    public function setStatusCode($statusCode)
+    public function setStatusCode(int $statusCode)
     {
         $this->statusCode = $statusCode;
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getStatusCode()
     {
@@ -219,16 +198,25 @@ class Profile
         $child->setParent($this);
     }
 
+    public function getChildByToken(string $token): ?self
+    {
+        foreach ($this->children as $child) {
+            if ($token === $child->getToken()) {
+                return $child;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Gets a Collector by name.
-     *
-     * @param string $name A collector name
      *
      * @return DataCollectorInterface A DataCollectorInterface instance
      *
      * @throws \InvalidArgumentException if the collector does not exist
      */
-    public function getCollector($name)
+    public function getCollector(string $name)
     {
         if (!isset($this->collectors[$name])) {
             throw new \InvalidArgumentException(sprintf('Collector "%s" does not exist.', $name));
@@ -269,17 +257,16 @@ class Profile
     }
 
     /**
-     * Returns true if a Collector for the given name exists.
-     *
-     * @param string $name A collector name
-     *
      * @return bool
      */
-    public function hasCollector($name)
+    public function hasCollector(string $name)
     {
         return isset($this->collectors[$name]);
     }
 
+    /**
+     * @return array
+     */
     public function __sleep()
     {
         return ['token', 'parent', 'children', 'collectors', 'ip', 'method', 'url', 'time', 'statusCode'];

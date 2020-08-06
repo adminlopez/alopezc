@@ -2,10 +2,12 @@
 
 namespace Illuminate\Mail;
 
-use Parsedown;
-use Illuminate\Support\Arr;
-use Illuminate\Support\HtmlString;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
+use League\CommonMark\CommonMarkConverter;
+use League\CommonMark\Environment;
+use League\CommonMark\Extension\Table\TableExtension;
 use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 
 class Markdown
@@ -13,7 +15,7 @@ class Markdown
     /**
      * The view factory implementation.
      *
-     * @var \Illuminate\View\Factory
+     * @var \Illuminate\Contracts\View\Factory
      */
     protected $view;
 
@@ -41,8 +43,8 @@ class Markdown
     public function __construct(ViewFactory $view, array $options = [])
     {
         $this->view = $view;
-        $this->theme = Arr::get($options, 'theme', 'default');
-        $this->loadComponentsFrom(Arr::get($options, 'paths', []));
+        $this->theme = $options['theme'] ?? 'default';
+        $this->loadComponentsFrom($options['paths'] ?? []);
     }
 
     /**
@@ -61,13 +63,17 @@ class Markdown
             'mail', $this->htmlComponentPaths()
         )->make($view, $data)->render();
 
-        return new HtmlString(with($inliner ?: new CssToInlineStyles)->convert(
-            $contents, $this->view->make('mail::themes.'.$this->theme)->render()
+        $theme = Str::contains($this->theme, '::')
+            ? $this->theme
+            : 'mail::themes.'.$this->theme;
+
+        return new HtmlString(($inliner ?: new CssToInlineStyles)->convert(
+            $contents, $this->view->make($theme, $data)->render()
         ));
     }
 
     /**
-     * Render the Markdown template into HTML.
+     * Render the Markdown template into text.
      *
      * @param  string  $view
      * @param  array  $data
@@ -78,7 +84,7 @@ class Markdown
         $this->view->flushFinderCache();
 
         $contents = $this->view->replaceNamespace(
-            'mail', $this->markdownComponentPaths()
+            'mail', $this->textComponentPaths()
         )->make($view, $data)->render();
 
         return new HtmlString(
@@ -90,13 +96,19 @@ class Markdown
      * Parse the given Markdown text into HTML.
      *
      * @param  string  $text
-     * @return string
+     * @return \Illuminate\Support\HtmlString
      */
     public static function parse($text)
     {
-        $parsedown = new Parsedown;
+        $environment = Environment::createCommonMarkEnvironment();
 
-        return new HtmlString($parsedown->text($text));
+        $environment->addExtension(new TableExtension);
+
+        $converter = new CommonMarkConverter([
+            'allow_unsafe_links' => false,
+        ], $environment);
+
+        return new HtmlString($converter->convertToHtml($text));
     }
 
     /**
@@ -112,14 +124,14 @@ class Markdown
     }
 
     /**
-     * Get the Markdown component paths.
+     * Get the text component paths.
      *
      * @return array
      */
-    public function markdownComponentPaths()
+    public function textComponentPaths()
     {
         return array_map(function ($path) {
-            return $path.'/markdown';
+            return $path.'/text';
         }, $this->componentPaths());
     }
 
@@ -144,5 +156,18 @@ class Markdown
     public function loadComponentsFrom(array $paths = [])
     {
         $this->componentPaths = $paths;
+    }
+
+    /**
+     * Set the default theme to be used.
+     *
+     * @param  string  $theme
+     * @return $this
+     */
+    public function theme($theme)
+    {
+        $this->theme = $theme;
+
+        return $this;
     }
 }

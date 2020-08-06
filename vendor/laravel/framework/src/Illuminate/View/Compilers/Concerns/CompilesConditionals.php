@@ -5,15 +5,11 @@ namespace Illuminate\View\Compilers\Concerns;
 trait CompilesConditionals
 {
     /**
-     * Compile the has-section statements into valid PHP.
+     * Identifier for the first case in switch statement.
      *
-     * @param  string  $expression
-     * @return string
+     * @var bool
      */
-    protected function compileHasSection($expression)
-    {
-        return "<?php if (! empty(trim(\$__env->yieldContent{$expression}))): ?>";
-    }
+    protected $firstCaseInSwitch = true;
 
     /**
      * Compile the if-auth statements into valid PHP.
@@ -29,11 +25,65 @@ trait CompilesConditionals
     }
 
     /**
+     * Compile the else-auth statements into valid PHP.
+     *
+     * @param  string|null  $guard
+     * @return string
+     */
+    protected function compileElseAuth($guard = null)
+    {
+        $guard = is_null($guard) ? '()' : $guard;
+
+        return "<?php elseif(auth()->guard{$guard}->check()): ?>";
+    }
+
+    /**
      * Compile the end-auth statements into valid PHP.
      *
      * @return string
      */
     protected function compileEndAuth()
+    {
+        return '<?php endif; ?>';
+    }
+
+    /**
+     * Compile the env statements into valid PHP.
+     *
+     * @param  string  $environments
+     * @return string
+     */
+    protected function compileEnv($environments)
+    {
+        return "<?php if(app()->environment{$environments}): ?>";
+    }
+
+    /**
+     * Compile the end-env statements into valid PHP.
+     *
+     * @return string
+     */
+    protected function compileEndEnv()
+    {
+        return '<?php endif; ?>';
+    }
+
+    /**
+     * Compile the production statements into valid PHP.
+     *
+     * @return string
+     */
+    protected function compileProduction()
+    {
+        return "<?php if(app()->environment('production')): ?>";
+    }
+
+    /**
+     * Compile the end-production statements into valid PHP.
+     *
+     * @return string
+     */
+    protected function compileEndProduction()
     {
         return '<?php endif; ?>';
     }
@@ -52,6 +102,19 @@ trait CompilesConditionals
     }
 
     /**
+     * Compile the else-guest statements into valid PHP.
+     *
+     * @param  string|null  $guard
+     * @return string
+     */
+    protected function compileElseGuest($guard = null)
+    {
+        $guard = is_null($guard) ? '()' : $guard;
+
+        return "<?php elseif(auth()->guard{$guard}->guest()): ?>";
+    }
+
+    /**
      * Compile the end-guest statements into valid PHP.
      *
      * @return string
@@ -59,6 +122,28 @@ trait CompilesConditionals
     protected function compileEndGuest()
     {
         return '<?php endif; ?>';
+    }
+
+    /**
+     * Compile the has-section statements into valid PHP.
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    protected function compileHasSection($expression)
+    {
+        return "<?php if (! empty(trim(\$__env->yieldContent{$expression}))): ?>";
+    }
+
+    /**
+     * Compile the section-missing statements into valid PHP.
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    protected function compileSectionMissing($expression)
+    {
+        return "<?php if (empty(trim(\$__env->yieldContent{$expression}))): ?>";
     }
 
     /**
@@ -143,5 +228,55 @@ trait CompilesConditionals
     protected function compileEndIsset()
     {
         return '<?php endif; ?>';
+    }
+
+    /**
+     * Compile the switch statements into valid PHP.
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    protected function compileSwitch($expression)
+    {
+        $this->firstCaseInSwitch = true;
+
+        return "<?php switch{$expression}:";
+    }
+
+    /**
+     * Compile the case statements into valid PHP.
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    protected function compileCase($expression)
+    {
+        if ($this->firstCaseInSwitch) {
+            $this->firstCaseInSwitch = false;
+
+            return "case {$expression}: ?>";
+        }
+
+        return "<?php case {$expression}: ?>";
+    }
+
+    /**
+     * Compile the default statements in switch case into valid PHP.
+     *
+     * @return string
+     */
+    protected function compileDefault()
+    {
+        return '<?php default: ?>';
+    }
+
+    /**
+     * Compile the end switch statements into valid PHP.
+     *
+     * @return string
+     */
+    protected function compileEndSwitch()
+    {
+        return '<?php endswitch; ?>';
     }
 }

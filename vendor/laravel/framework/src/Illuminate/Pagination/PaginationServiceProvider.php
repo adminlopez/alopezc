@@ -41,10 +41,14 @@ class PaginationServiceProvider extends ServiceProvider
             $page = $this->app['request']->input($pageName);
 
             if (filter_var($page, FILTER_VALIDATE_INT) !== false && (int) $page >= 1) {
-                return $page;
+                return (int) $page;
             }
 
             return 1;
+        });
+
+        Paginator::queryStringResolver(function () {
+            return $this->app['request']->query();
         });
     }
 }
